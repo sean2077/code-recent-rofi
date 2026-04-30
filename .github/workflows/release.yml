@@ -18,7 +18,10 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'success'
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
     environment:
       name: pypi
       url: https://pypi.org/project/code-recent-rofi/
@@ -37,15 +40,10 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: "lts/*"
+          cache: npm
 
       - name: Install semantic-release
-        run: |
-          npm install -g semantic-release@latest
-          npm install -g @semantic-release/changelog@latest
-          npm install -g @semantic-release/exec@latest
-          npm install -g @semantic-release/git@latest
-          npm install -g @semantic-release/github@latest
-          npm install -g conventional-changelog-conventionalcommits@latest
+        run: npm ci
 
       - name: Release
         env:
@@ -54,7 +52,7 @@ jobs:
           GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
           GIT_COMMITTER_NAME: github-actions[bot]
           GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
-        run: npx semantic-release
+        run: npm exec -- semantic-release
 
       - name: Publish to PyPI
         if: success() && hashFiles('dist/*') != ''

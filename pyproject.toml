@@ -92,7 +92,10 @@ packages = ["src/code_recent_rofi"]
 # Tool Configurations
 # ============================================================================
 [tool.uv]
-# index-url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/"
+
+[[tool.uv.index]]
+url = "https://pypi.org/simple"
+default = true
 
 # ----------------------------------------------------------------------------
 # Ruff - Linter & Formatter
