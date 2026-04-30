@@ -40,7 +40,6 @@ classifiers = [
 # Core dependencies - always installed with the package
 # ----------------------------------------------------------------------------
 dependencies = [
-  "typer>=0.17",
 ]
 
 # ----------------------------------------------------------------------------
@@ -55,7 +54,7 @@ dependencies = [
 
 # Entry points - console scripts
 [project.scripts]
-code-recent-rofi = "code_recent_rofi.cli:app"
+code-recent-rofi = "code_recent_rofi.cli:main"
 
 # Project URLs - displayed on PyPI
 [project.urls]

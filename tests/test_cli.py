@@ -2,31 +2,41 @@
 
 from __future__ import annotations
 
-from typer.testing import CliRunner
+from pathlib import Path
 
-from code_recent_rofi.cli import app
+import pytest
 
-runner = CliRunner()
+from code_recent_rofi import cli
 
 
-def test_version() -> None:
-    result = runner.invoke(app, ["--version"])
+def test_version(capsys) -> None:
+    with pytest.raises(SystemExit) as exit_info:
+        cli.main(["--version"])
 
-    assert result.exit_code == 0
-    assert "code-recent-rofi" in result.stdout
+    assert exit_info.value.code == 0
+    assert "code-recent-rofi" in capsys.readouterr().out
 
 
 def test_cli_delegates_to_app_run(monkeypatch) -> None:
-    calls: list[tuple[str, str, str]] = []
+    calls: list[tuple[Path | None, str, str, str]] = []
 
     def fake_run(*, database, prompt, rofi_command, code_command):
-        assert database is None
-        calls.append((prompt, rofi_command, code_command))
+        calls.append((database, prompt, rofi_command, code_command))
         return 0
 
-    monkeypatch.setattr("code_recent_rofi.cli.run", fake_run)
+    monkeypatch.setattr(cli, "run", fake_run)
 
-    result = runner.invoke(app, ["--prompt", "Code", "--rofi-command", "fake-rofi", "--code-command", "codium"])
+    with pytest.raises(SystemExit) as exit_info:
+        cli.main([
+            "--database",
+            "/workspace/state.vscdb",
+            "--prompt",
+            "Code",
+            "--rofi-command",
+            "fake-rofi",
+            "--code-command",
+            "codium",
+        ])
 
-    assert result.exit_code == 0
-    assert calls == [("Code", "fake-rofi", "codium")]
+    assert exit_info.value.code == 0
+    assert calls == [(Path("/workspace/state.vscdb"), "Code", "fake-rofi", "codium")]

@@ -2,87 +2,64 @@
 
 from __future__ import annotations
 
+import argparse
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Annotated
-
-import typer
 
 from . import __version__
 from .app import run
 
-app = typer.Typer(
-    name="code-recent-rofi",
-    help="Open VS Code recent projects from a rofi menu.",
-    add_completion=False,
-    no_args_is_help=False,
-)
+
+def build_parser() -> argparse.ArgumentParser:
+    """Build the command-line argument parser."""
+    parser = argparse.ArgumentParser(
+        prog="code-recent-rofi",
+        description="Open VS Code recent projects from a rofi menu.",
+    )
+    parser.add_argument(
+        "--version",
+        "-v",
+        action="version",
+        version=f"%(prog)s {__version__}",
+        help="Show version and exit.",
+    )
+    parser.add_argument(
+        "--database",
+        "-d",
+        type=Path,
+        help="Use an explicit VS Code state.vscdb path.",
+    )
+    parser.add_argument(
+        "--prompt",
+        "-p",
+        default="VS Code",
+        help="rofi prompt text.",
+    )
+    parser.add_argument(
+        "--rofi-command",
+        default="rofi",
+        help="rofi executable name or path.",
+    )
+    parser.add_argument(
+        "--code-command",
+        default="code",
+        help="VS Code executable name or path.",
+    )
+    return parser
 
 
-@app.callback(invoke_without_command=True)
-def main(
-    ctx: typer.Context,
-    *,
-    version: Annotated[
-        bool,
-        typer.Option(
-            "--version",
-            "-v",
-            help="Show version and exit.",
-            is_eager=True,
-        ),
-    ] = False,
-    database: Annotated[
-        Path | None,
-        typer.Option(
-            "--database",
-            "-d",
-            exists=False,
-            file_okay=True,
-            dir_okay=False,
-            readable=True,
-            resolve_path=True,
-            help="Use an explicit VS Code state.vscdb path.",
-        ),
-    ] = None,
-    prompt: Annotated[
-        str,
-        typer.Option(
-            "--prompt",
-            "-p",
-            help="rofi prompt text.",
-        ),
-    ] = "VS Code",
-    rofi_command: Annotated[
-        str,
-        typer.Option(
-            "--rofi-command",
-            help="rofi executable name or path.",
-        ),
-    ] = "rofi",
-    code_command: Annotated[
-        str,
-        typer.Option(
-            "--code-command",
-            help="VS Code executable name or path.",
-        ),
-    ] = "code",
-) -> None:
+def main(argv: Sequence[str] | None = None) -> None:
     """Open VS Code recent projects from a rofi menu."""
-    if version:
-        typer.echo(f"code-recent-rofi {__version__}")
-        raise typer.Exit
-
-    if ctx.invoked_subcommand is not None:
-        return
+    args = build_parser().parse_args(argv)
 
     exit_code = run(
-        database=database,
-        prompt=prompt,
-        rofi_command=rofi_command,
-        code_command=code_command,
+        database=args.database,
+        prompt=args.prompt,
+        rofi_command=args.rofi_command,
+        code_command=args.code_command,
     )
-    raise typer.Exit(exit_code)
+    raise SystemExit(exit_code)
 
 
 if __name__ == "__main__":
-    app()
+    main()
