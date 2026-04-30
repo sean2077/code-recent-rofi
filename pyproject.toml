@@ -11,7 +11,7 @@ build-backend = "hatchling.build"
 # ============================================================================
 [project]
 name = "code-recent-rofi"
-version = "1.0.0"
+version = "1.0.1"
 description = "Open VS Code recent projects from a rofi menu."
 readme = "README.md"
 requires-python = ">=3.12"
