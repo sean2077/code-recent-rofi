@@ -39,11 +39,17 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: "lts/*"
-          cache: npm
+          node-version: "24"
 
       - name: Install semantic-release
-        run: npm ci
+        run: |
+          npm install --no-save --no-package-lock \
+            semantic-release@25.0.3 \
+            @semantic-release/changelog@6.0.3 \
+            @semantic-release/exec@7.1.0 \
+            @semantic-release/git@10.0.1 \
+            @semantic-release/github@12.0.6 \
+            conventional-changelog-conventionalcommits@9.3.1
 
       - name: Release
         env:
@@ -52,7 +58,7 @@ jobs:
           GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
           GIT_COMMITTER_NAME: github-actions[bot]
           GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
-        run: npm exec -- semantic-release
+        run: npx semantic-release
 
       - name: Publish to PyPI
         if: success() && hashFiles('dist/*') != ''
