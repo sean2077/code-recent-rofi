@@ -6,10 +6,10 @@ from code_recent_rofi.opener import code_command_for_target
 
 
 def test_code_command_for_local_file_uri() -> None:
-    assert code_command_for_target("file:///home/sean/My%20Project") == [
+    assert code_command_for_target("file:///workspace/My%20Project") == [
         "code",
         "--reuse-window",
-        "/home/sean/My Project",
+        "/workspace/My Project",
     ]
 
 

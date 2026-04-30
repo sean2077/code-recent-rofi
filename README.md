@@ -5,7 +5,7 @@ Open VS Code recent projects, files, and workspaces from a rofi popup.
 The intended desktop workflow is:
 
 ```text
-keyboard shortcut -> /home/sean/.local/bin/code-recent-rofi
+keyboard shortcut -> code-recent-rofi
                   -> rofi popup
                   -> select a recent VS Code target
                   -> code opens the selection
@@ -23,10 +23,17 @@ metadata, and `$VSCODE_RECENT_DB` when set.
 
 ## Install
 
-For a user-level executable at `/home/sean/.local/bin/code-recent-rofi`:
+Install the command as a user-level tool from this repository checkout:
 
 ```bash
-uv tool install /home/sean/Workspace/sean2077/code-recent-rofi --force
+uv tool install . --force
+```
+
+If your desktop shortcut editor requires an absolute command path, resolve the
+installed command from your current environment instead of hard-coding one:
+
+```bash
+command -v code-recent-rofi
 ```
 
 For editable development:

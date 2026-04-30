@@ -19,10 +19,10 @@ from code_recent_rofi.vscode_recent import (
 
 
 def test_uri_obj_to_string_supports_file_uri() -> None:
-    result = uri_obj_to_string({"scheme": "file", "path": "/home/sean/My Project"})
+    result = uri_obj_to_string({"scheme": "file", "path": "/workspace/My Project"})
 
-    assert result == "file:///home/sean/My%20Project"
-    assert file_uri_to_path(result) == "/home/sean/My Project"
+    assert result == "file:///workspace/My%20Project"
+    assert file_uri_to_path(result) == "/workspace/My Project"
 
 
 def test_uri_obj_to_string_supports_remote_uri() -> None:
