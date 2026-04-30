@@ -67,6 +67,42 @@ def test_code_command_for_open_plain_target_focuses_existing_window(tmp_path: Pa
     ]
 
 
+def test_code_command_for_existing_local_directory_uses_folder_uri_for_new_window(tmp_path: Path) -> None:
+    project = tmp_path / "new-app"
+    project.mkdir()
+
+    assert code_command_for_target(project.as_uri(), window_state_files=[]) == [
+        "code",
+        "--new-window",
+        "--folder-uri",
+        project.as_uri(),
+    ]
+
+
+def test_code_command_for_existing_plain_directory_uses_folder_uri_for_new_window(tmp_path: Path) -> None:
+    project = tmp_path / "custom-app"
+    project.mkdir()
+
+    assert code_command_for_target(str(project), window_state_files=[]) == [
+        "code",
+        "--new-window",
+        "--folder-uri",
+        project.as_uri(),
+    ]
+
+
+def test_code_command_for_open_local_directory_focuses_with_folder_uri(tmp_path: Path) -> None:
+    project = tmp_path / "app"
+    project.mkdir()
+    state_file = write_window_state(tmp_path, [{"folder": project.as_uri()}])
+
+    assert code_command_for_target(project.as_uri(), window_state_files=[state_file]) == [
+        "code",
+        "--folder-uri",
+        project.as_uri(),
+    ]
+
+
 def test_code_command_for_last_active_target_focuses_existing_window(tmp_path: Path) -> None:
     state_file = write_window_state(tmp_path, [], last_active_window={"folder": "file:///workspace/app"})
 

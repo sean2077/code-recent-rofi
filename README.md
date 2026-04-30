@@ -96,9 +96,9 @@ code-recent-rofi --version
 ## Behavior
 
 - Local `file://` targets first check VS Code's persisted open-window state. If
-  the target is already open, the tool asks VS Code to reveal it with
-  `code -- <path>`; otherwise it opens a new window with
-  `code --new-window -- <path>`.
+  the target is an existing directory, the tool asks VS Code to open or reveal
+  it through `--folder-uri`, adding `--new-window` when the directory is not
+  already open. Non-directory local targets keep the safe `-- <path>` separator.
 - `vscode-remote://` and `vscode://` targets are handed to VS Code through
   `code --folder-uri <uri>` when already open, or
   `code --new-window --folder-uri <uri>` otherwise.

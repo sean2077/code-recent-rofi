@@ -55,6 +55,34 @@ def normalized_target_key(target: str) -> tuple[str, str]:
     return ("file", str(Path(target).expanduser().resolve()))
 
 
+def local_path_for_target(target: str) -> str:
+    """Return the local filesystem path for a file URI or plain path target."""
+    if target.startswith("file://"):
+        return file_uri_to_path(target)
+
+    return str(Path(target).expanduser())
+
+
+def local_folder_uri_for_target(target: str) -> str | None:
+    """Return a file URI when the target is an existing local directory."""
+    path = Path(local_path_for_target(target)).expanduser()
+    if not path.is_dir():
+        return None
+
+    if target.startswith("file://"):
+        return target
+
+    return path.resolve().as_uri()
+
+
+def code_command_for_folder_uri(*, code_command: str, folder_uri: str, target_is_open: bool) -> list[str]:
+    """Build a VS Code folder URI command for an open or missing folder."""
+    if target_is_open:
+        return [code_command, "--folder-uri", folder_uri]
+
+    return [code_command, "--new-window", "--folder-uri", folder_uri]
+
+
 def window_state_targets(state: Mapping[str, Any]) -> Iterator[str]:
     """Yield folder/workspace targets from VS Code's persisted window state."""
     windows_state = state.get("windowsState")
@@ -122,18 +150,18 @@ def code_command_for_target(
     """Build the `code` command for a normalized recent target."""
     target_is_open = is_target_open(target, window_state_files=window_state_files, code_command=code_command)
 
-    if target.startswith("file://"):
-        path = file_uri_to_path(target)
-        return [code_command, "--", path] if target_is_open else [code_command, "--new-window", "--", path]
-
     if target.startswith(("vscode-remote://", "vscode://")):
-        return (
-            [code_command, "--folder-uri", target]
-            if target_is_open
-            else [code_command, "--new-window", "--folder-uri", target]
+        return code_command_for_folder_uri(code_command=code_command, folder_uri=target, target_is_open=target_is_open)
+
+    folder_uri = local_folder_uri_for_target(target)
+    if folder_uri:
+        return code_command_for_folder_uri(
+            code_command=code_command,
+            folder_uri=folder_uri,
+            target_is_open=target_is_open,
         )
 
-    path = str(Path(target).expanduser())
+    path = local_path_for_target(target)
     return [code_command, "--", path] if target_is_open else [code_command, "--new-window", "--", path]
 
 
