@@ -8,7 +8,7 @@ The intended desktop workflow is:
 keyboard shortcut -> code-recent-rofi
                   -> rofi popup
                   -> select a recent VS Code target
-                  -> code opens or creates the selection
+                  -> code focuses it or opens it in a new window
 ```
 
 ## Native VS Code status
@@ -17,8 +17,8 @@ keyboard shortcut -> code-recent-rofi
 recent-folder sharing for the Visual Studio Code Agents app in Insiders. That
 covers the VS Code Insiders/Agents workflow, but it is not a general Linux
 launcher API. `code-recent-rofi` remains useful when you want a rofi menu for
-VS Code recent projects, files, and workspaces before asking VS Code to open or
-create the selected target.
+VS Code recent projects, files, and workspaces before asking VS Code to focus or
+open the selected target.
 
 ## Requirements
 
@@ -73,7 +73,7 @@ code-recent-rofi
 ```
 
 Select a recent item, or type a new path in rofi and press Enter. Custom input
-is passed to VS Code as an open-or-create target.
+is passed to VS Code as an open-or-focus target.
 
 Use a specific VS Code database, useful for debugging or tests:
 
@@ -95,11 +95,14 @@ code-recent-rofi --version
 
 ## Behavior
 
-- Local `file://` targets use VS Code's open-or-create behavior through
-  `code --reuse-window <path>`.
+- Local `file://` targets first check VS Code's persisted open-window state. If
+  the target is already open, the tool asks VS Code to reveal it with
+  `code -- <path>`; otherwise it opens a new window with
+  `code --new-window -- <path>`.
 - `vscode-remote://` and `vscode://` targets are handed to VS Code through
-  `code --folder-uri <uri>`.
-- Non-recent custom input from rofi is treated as a plain open-or-create target;
+  `code --folder-uri <uri>` when already open, or
+  `code --new-window --folder-uri <uri>` otherwise.
+- Non-recent custom input from rofi is treated as a plain open-or-focus target;
   leading `~` is expanded before launching VS Code.
 - Duplicate recent targets are hidden while preserving VS Code's recency order.
 - Cancelling rofi exits without opening anything.

@@ -16,7 +16,7 @@ def menu_input(items: Sequence[RecentItem]) -> str:
 
 
 def selected_item(items: Sequence[RecentItem], selected_text: str) -> RecentItem | None:
-    """Resolve rofi stdout to a recent item or a custom open-or-create target."""
+    """Resolve rofi stdout to a recent item or a custom open-or-focus target."""
     selected = selected_text.strip()
     if not selected:
         return None

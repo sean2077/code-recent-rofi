@@ -22,7 +22,7 @@ def test_selected_item_matches_rofi_stdout() -> None:
     assert selected_item([item], "") is None
 
 
-def test_selected_item_uses_custom_input_as_open_or_create_target() -> None:
+def test_selected_item_uses_custom_input_as_open_or_focus_target() -> None:
     assert selected_item([], "~/workspace/new-app\n") == RecentItem(
         label="~/workspace/new-app",
         target="~/workspace/new-app",
