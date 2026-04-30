@@ -22,7 +22,7 @@ def test_uri_obj_to_string_supports_file_uri() -> None:
     result = uri_obj_to_string({"scheme": "file", "path": "/workspace/My Project"})
 
     assert result == "file:///workspace/My%20Project"
-    assert file_uri_to_path(result) == "/workspace/My Project"
+    assert file_uri_to_path(result) == str(Path("/workspace/My Project"))
 
 
 def test_uri_obj_to_string_supports_remote_uri() -> None:
@@ -52,7 +52,7 @@ def test_recent_items_are_deduplicated_and_display_local_paths() -> None:
 
     assert [item.label for item in items] == ["App", "vscode-remote://ssh-remote+devbox/workspace/api"]
     assert [item.detail for item in items] == [
-        "/workspace/app",
+        str(Path("/workspace/app")),
         "vscode-remote://ssh-remote+devbox/workspace/api",
     ]
 

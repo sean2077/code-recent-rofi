@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from code_recent_rofi import app as recent_app
 from code_recent_rofi.models import RecentItem
+from code_recent_rofi.vscode_recent import file_uri_to_path
 
 
 def test_run_returns_no_data_when_recent_list_is_empty(monkeypatch) -> None:
@@ -51,10 +52,11 @@ def test_run_opens_custom_target_when_recent_list_is_empty(monkeypatch) -> None:
 
 def test_run_opens_selected_target(monkeypatch) -> None:
     opened: list[str] = []
-    item = RecentItem(label="App", target="file:///workspace/app", detail="/workspace/app")
+    target = "file:///workspace/app"
+    item = RecentItem(label="App", target=target, detail=file_uri_to_path(target))
 
     def fake_read_recent_entries(databases):
-        return None, [{"folderUri": "file:///workspace/app", "label": "App"}]
+        return None, [{"folderUri": target, "label": "App"}]
 
     def fake_choose_item(items, *, prompt, rofi_command):
         assert items == [item]
@@ -70,7 +72,7 @@ def test_run_opens_selected_target(monkeypatch) -> None:
     monkeypatch.setattr(recent_app, "open_target", fake_open_target)
 
     assert recent_app.run(prompt="Code", rofi_command="fake-rofi", code_command="codium") == 0
-    assert opened == ["codium:file:///workspace/app"]
+    assert opened == [f"codium:{target}"]
 
 
 def test_run_exits_cleanly_when_rofi_is_cancelled(monkeypatch) -> None:
