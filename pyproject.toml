@@ -1,0 +1,308 @@
+# ============================================================================
+# Build System - PEP 517/518
+# ============================================================================
+[build-system]
+requires = ["hatchling>=1.28"]
+build-backend = "hatchling.build"
+
+# ============================================================================
+# Project Metadata - PEP 621
+# https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
+# ============================================================================
+[project]
+name = "code-recent-rofi"
+version = "0.0.1"
+description = "Open VS Code recent projects from a rofi menu."
+readme = "README.md"
+requires-python = ">=3.12"
+# License - PEP 639 (SPDX expression)
+# https://spdx.org/licenses/
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Sean Zhang", email = "seanzhang.dev@gmail.com" }]
+maintainers = [{ name = "Sean Zhang", email = "seanzhang.dev@gmail.com" }]
+keywords = ["vscode", "rofi", "launcher", "linux", "developer-tools"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Environment :: X11 Applications",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Desktop Environment",
+  "Topic :: Software Development",
+  "Topic :: Utilities",
+  "Typing :: Typed",
+]
+
+# ----------------------------------------------------------------------------
+# Core dependencies - always installed with the package
+# ----------------------------------------------------------------------------
+dependencies = [
+  "typer>=0.17",
+]
+
+# ----------------------------------------------------------------------------
+# Optional dependencies for users - PEP 621
+# Install with: uv add code-recent-rofi[extra_name]
+# or: pip install code-recent-rofi[extra_name]
+# ----------------------------------------------------------------------------
+[project.optional-dependencies]
+# gui = ["PySide6>=6.7"]
+# async = ["aiohttp>=3.9"]
+# all = ["code-recent-rofi[gui,async]"]
+
+# Entry points - console scripts
+[project.scripts]
+code-recent-rofi = "code_recent_rofi.cli:app"
+
+# Project URLs - displayed on PyPI
+[project.urls]
+Homepage = "https://github.com/sean2077/code-recent-rofi"
+Repository = "https://github.com/sean2077/code-recent-rofi.git"
+Issues = "https://github.com/sean2077/code-recent-rofi/issues"
+Changelog = "https://github.com/sean2077/code-recent-rofi/blob/main/CHANGELOG.md"
+
+# ============================================================================
+# Development dependencies - PEP 735
+# NOT shipped with the package, only for development
+# Install with: uv sync --group dev (or --all-groups)
+# ============================================================================
+[dependency-groups]
+dev = [
+  "pytest",
+  "pytest-cov",
+  "ruff",
+  "pre-commit",
+  "poethepoet",
+  "ty",
+  "deptry",
+]
+
+# ============================================================================
+# Build Configuration - Hatchling
+# ============================================================================
+[tool.hatch.build.targets.wheel]
+packages = ["src/code_recent_rofi"]
+
+# Note: sdist configuration is usually not needed - hatchling has sensible defaults
+# It respects .gitignore and includes pyproject.toml, README, LICENSE automatically
+
+# ============================================================================
+# Tool Configurations
+# ============================================================================
+[tool.uv]
+# index-url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/"
+
+# ----------------------------------------------------------------------------
+# Ruff - Linter & Formatter
+# https://docs.astral.sh/ruff/configuration/
+# ----------------------------------------------------------------------------
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+fix = true
+preview = true  # enable preview rules for latest lint improvements
+# Extend default excludes (keeps .git, .venv, __pycache__, etc.)
+extend-exclude = [
+  "build",
+  "dist",
+]
+
+[tool.ruff.lint]
+select = [
+  "E",     # pycodestyle errors
+  "W",     # pycodestyle warnings
+  "F",     # pyflakes (includes F401 unused imports, F841 unused variables)
+  "I",     # isort
+  "B",     # flake8-bugbear
+  "C4",    # flake8-comprehensions
+  "UP",    # pyupgrade
+  "N",     # pep8-naming
+  "SIM",   # flake8-simplify
+  "S",     # flake8-bandit (security)
+  "PTH",   # flake8-use-pathlib
+  "PL",    # pylint (PLC, PLE, PLR, PLW)
+  "RUF",   # ruff-specific rules
+  "ARG",   # flake8-unused-arguments
+  "ERA",   # eradicate (commented-out code detection)
+  "PERF",  # perflint (performance anti-patterns)
+  "FURB",  # refurb (code modernization)
+  "TRY",   # tryceratops (exception handling)
+  "LOG",   # flake8-logging
+  "TC",    # flake8-type-checking (TYPE_CHECKING block optimization)
+  "PIE",   # flake8-pie (misc lints)
+  "RET",   # flake8-return
+  "RSE",   # flake8-raise
+  "FLY",   # flynt (string concatenation to f-string)
+  "A",     # flake8-builtins (builtin shadowing)
+  "Q",     # flake8-quotes (quote style consistency)
+  "YTT",   # flake8-2020 (Python version checks)
+  "DTZ",   # flake8-datetimez (timezone-aware datetime)
+  "T20",   # flake8-print (print statement detection)
+  "FA",    # flake8-future-annotations
+]
+ignore = [
+  # --- Code style (handled by formatter or acceptable) ---
+  "E501",    # line length handled by ruff format
+  "B008",    # function call in default argument (common in typer/fastapi)
+  # --- Unicode (Chinese support) ---
+  "RUF001",  # ambiguous unicode characters in string (Chinese strings)
+  "RUF002",  # ambiguous unicode characters in docstring
+  "RUF003",  # ambiguous unicode characters in comment (Chinese comments)
+  # --- Code organization preferences ---
+  "RUF022",  # __all__ not sorted (semantic grouping > alphabetical)
+  "SIM102",  # nested if (sometimes clearer to separate)
+  "SIM108",  # ternary operator (if-else can be clearer sometimes)
+  "PTH123",  # Path.open() (open() is simpler when pathlib used for path construction)
+  # --- Commented code detection (Chinese comments often misidentified) ---
+  "ERA001",  # commented-out code (Chinese comments often misidentified as code)
+  # --- Exception handling (detailed messages are acceptable) ---
+  "TRY003",  # long exception message (acceptable for descriptive errors)
+  "TRY300",  # return in try block (sometimes clearer than else block)
+  # --- Pylint complexity (CLI commands and data processing are naturally complex) ---
+  "PLR0911", # too many return statements
+  "PLR0912", # too many branches
+  "PLR0913", # too many arguments
+  "PLR0915", # too many statements
+  "PLR2004", # magic value comparison (context makes meaning clear)
+  # --- Type checking (runtime type usage, not suitable for TYPE_CHECKING block) ---
+  "TC001",   # move application import into type-checking block
+  "TC003",   # move stdlib import into type-checking block
+]
+
+# Allow autofix for all enabled rules
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+  "S101",    # allow assert in tests
+  "PLC0415", # allow imports inside functions in tests
+  "PLR2004", # allow magic numbers in tests
+  "ARG001",  # allow unused function arguments in tests (fixtures)
+  "ARG002",  # allow unused method arguments in tests
+  "T20",     # allow print in tests
+]
+"__init__.py" = ["F401"]  # allow unused imports in __init__.py
+"cli.py" = ["T20"]        # allow print in CLI modules
+
+[tool.ruff.lint.isort]
+known-first-party = ["code_recent_rofi"]
+
+[tool.ruff.format]
+preview = true
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+
+# ----------------------------------------------------------------------------
+# ty - Type Checker (Astral)
+# https://github.com/astral-sh/ty
+# ----------------------------------------------------------------------------
+[tool.ty.src]
+include = ["src"]
+
+# ----------------------------------------------------------------------------
+# pytest - Testing Framework
+# https://docs.pytest.org/en/stable/reference/customize.html
+# ----------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+  "-v",
+  "-ra",                # show extra test summary info for all except passed
+  "--strict-markers",   # markers not registered in config raise errors
+  "--strict-config",    # any warnings from parsing config file raise errors
+]
+markers = [
+  "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+  "integration: marks tests as integration tests",
+]
+filterwarnings = [
+  "error",                          # treat warnings as errors
+  "ignore::DeprecationWarning",     # except deprecation warnings
+  "ignore::PendingDeprecationWarning",
+]
+xfail_strict = true  # xfail tests that pass are considered failures
+# Live logging - enable for debugging tests (pytest -o log_cli=true)
+log_cli = false
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)s] %(message)s"
+log_cli_date_format = "%H:%M:%S"
+
+# ----------------------------------------------------------------------------
+# Poethepoet - Task Runner
+# https://poethepoet.natn.io/
+# Cross-platform alternative to Makefile
+# ----------------------------------------------------------------------------
+
+[tool.poe.tasks._format-code]
+cmd = "ruff format src tests"
+
+[tool.poe.tasks._format-imports]
+cmd = "ruff check src tests --fix --select I"
+
+[tool.poe.tasks.format]
+sequence = ["_format-code", "_format-imports"]
+help = "Format code and organize imports"
+
+[tool.poe.tasks.lint]
+cmd = "ruff check src tests"
+help = "Run linter"
+
+[tool.poe.tasks.lint-fix]
+cmd = "ruff check src tests --fix"
+help = "Run linter and fix auto-fixable issues"
+
+[tool.poe.tasks.type-check]
+cmd = "ty check src"
+help = "Run type checker"
+
+[tool.poe.tasks.test]
+cmd = "pytest"
+help = "Run tests"
+
+[tool.poe.tasks.deptry]
+cmd = "deptry src"
+help = "Check for obsolete dependencies"
+
+[tool.poe.tasks.check]
+sequence = ["format", "lint", "type-check", "test", "deptry"]
+help = "Run all code quality checks including tests"
+
+[tool.poe.tasks.check-fast]
+sequence = ["lint", "type-check"]
+help = "Run quick checks (lint + type-check, no format/test)"
+
+[tool.poe.tasks.clean]
+# Cross-platform compatible clean using Python -c
+cmd = """
+python -c "
+import shutil
+from pathlib import Path
+for d in ['.pytest_cache', '.ruff_cache', '.mypy_cache', '.ty_cache', '.pyright', '.coverage', 'htmlcov', 'dist', 'build', '.eggs']:
+    shutil.rmtree(d, ignore_errors=True)
+for p in Path('.').rglob('__pycache__'):
+    shutil.rmtree(p, ignore_errors=True)
+for p in Path('.').glob('*.egg-info'):
+    shutil.rmtree(p, ignore_errors=True)
+for p in Path('.').rglob('.pytest_cache'):
+    shutil.rmtree(p, ignore_errors=True)
+for p in Path('.').glob('.coverage*'):
+    if p.is_file():
+        p.unlink()
+    elif p.is_dir():
+        shutil.rmtree(p, ignore_errors=True)
+print('Cleaned up generated files')
+"
+"""
+help = "Clean up generated files (cross-platform)"
+
+[tool.poe.tasks.update-deps]
+cmd = "uv sync --all-groups --all-extras --upgrade"
+help = "Update all dependencies"

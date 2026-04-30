@@ -1,0 +1,62 @@
+"""Tests for application orchestration."""
+
+from __future__ import annotations
+
+from code_recent_rofi import app as recent_app
+from code_recent_rofi.models import RecentItem
+
+
+def test_run_returns_no_data_when_recent_list_is_empty(monkeypatch) -> None:
+    notified = False
+
+    def fake_read_recent_entries(databases):
+        return None, []
+
+    def fake_notify_no_recent() -> None:
+        nonlocal notified
+        notified = True
+
+    monkeypatch.setattr(recent_app, "read_recent_entries", fake_read_recent_entries)
+    monkeypatch.setattr(recent_app, "notify_no_recent", fake_notify_no_recent)
+
+    assert recent_app.run() == 1
+    assert notified is True
+
+
+def test_run_opens_selected_target(monkeypatch) -> None:
+    opened: list[str] = []
+    item = RecentItem(label="App", target="file:///workspace/app", detail="/workspace/app")
+
+    def fake_read_recent_entries(databases):
+        return None, [{"folderUri": "file:///workspace/app", "label": "App"}]
+
+    def fake_choose_item(items, *, prompt, rofi_command):
+        assert items == [item]
+        assert prompt == "Code"
+        assert rofi_command == "fake-rofi"
+        return item
+
+    def fake_open_target(target, *, code_command):
+        opened.append(f"{code_command}:{target}")
+
+    monkeypatch.setattr(recent_app, "read_recent_entries", fake_read_recent_entries)
+    monkeypatch.setattr(recent_app, "choose_item", fake_choose_item)
+    monkeypatch.setattr(recent_app, "open_target", fake_open_target)
+
+    assert recent_app.run(prompt="Code", rofi_command="fake-rofi", code_command="codium") == 0
+    assert opened == ["codium:file:///workspace/app"]
+
+
+def test_run_exits_cleanly_when_rofi_is_cancelled(monkeypatch) -> None:
+    def fake_read_recent_entries(databases):
+        return None, [{"folderUri": "file:///workspace/app", "label": "App"}]
+
+    def fake_choose_item(items, *, prompt, rofi_command):
+        assert items
+        assert prompt == "VS Code"
+        assert rofi_command == "rofi"
+
+    monkeypatch.setattr(recent_app, "read_recent_entries", fake_read_recent_entries)
+    monkeypatch.setattr(recent_app, "choose_item", fake_choose_item)
+
+    assert recent_app.run() == 0
