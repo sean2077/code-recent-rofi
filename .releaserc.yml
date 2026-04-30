@@ -20,7 +20,7 @@ plugins:
     - changelogFile: CHANGELOG.md
   - - "@semantic-release/exec"
     - prepareCmd: uv version "${nextRelease.version}"
-      publishCmd: uv build
+      publishCmd: uv build --no-sources
   - - "@semantic-release/git"
     - assets:
         - CHANGELOG.md

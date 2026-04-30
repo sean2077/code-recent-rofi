@@ -23,7 +23,19 @@ metadata, and `$VSCODE_RECENT_DB` when set.
 
 ## Install
 
-Install the command as a user-level tool from this repository checkout:
+After the package is published to PyPI, run it directly with `uvx`:
+
+```bash
+uvx code-recent-rofi
+```
+
+Or install it as a persistent user-level tool:
+
+```bash
+uv tool install code-recent-rofi
+```
+
+Before the first PyPI release, install the command from this repository checkout:
 
 ```bash
 uv tool install . --force
@@ -99,6 +111,43 @@ uv run poe lint
 uv run poe type-check
 uv run poe test
 uv run poe deptry
+```
+
+Build and validate the PyPI distributions:
+
+```bash
+uv run poe build
+uv run poe dist-check
+```
+
+## Publishing
+
+PyPI publishing is wired through `.github/workflows/release.yml` using Trusted
+Publishing, so no long-lived PyPI token is needed in GitHub Actions.
+
+For the first upload, create a pending publisher in PyPI with:
+
+- PyPI project name: `code-recent-rofi`
+- Owner: `sean2077`
+- Repository name: `code-recent-rofi`
+- Workflow filename: `release.yml`
+- Environment name: `pypi`
+
+Publishing follows the same shape as `jsonpath-python`: push conventional commits
+to `main`, wait for CI to pass, and the release workflow runs from the successful
+CI run. `semantic-release` updates the version first, builds the distributions
+from that updated version, creates the GitHub release, and only then publishes
+the built artifacts to PyPI.
+
+If a Git tag already exists for a version that was not uploaded to PyPI, publish
+the next release version instead of trying to reuse the existing tag.
+
+Manual local publishing remains possible when you have a PyPI token:
+
+```bash
+uv run poe build
+uv run poe dist-check
+UV_PUBLISH_TOKEN=... uv publish
 ```
 
 ## License

@@ -85,8 +85,15 @@ dev = [
 [tool.hatch.build.targets.wheel]
 packages = ["src/code_recent_rofi"]
 
-# Note: sdist configuration is usually not needed - hatchling has sensible defaults
-# It respects .gitignore and includes pyproject.toml, README, LICENSE automatically
+[tool.hatch.build.targets.sdist]
+include = [
+  "/CHANGELOG.md",
+  "/LICENSE",
+  "/README.md",
+  "/pyproject.toml",
+  "/src",
+  "/tests",
+]
 
 # ============================================================================
 # Tool Configurations
@@ -272,6 +279,21 @@ help = "Run tests"
 [tool.poe.tasks.deptry]
 cmd = "deptry src"
 help = "Check for obsolete dependencies"
+
+[tool.poe.tasks.clean-dist]
+cmd = "python -c \"import shutil; shutil.rmtree('dist', ignore_errors=True)\""
+help = "Remove package build artifacts"
+
+[tool.poe.tasks._build-dist]
+cmd = "uv build --no-sources"
+
+[tool.poe.tasks.build]
+sequence = ["clean-dist", "_build-dist"]
+help = "Build source and wheel distributions for PyPI"
+
+[tool.poe.tasks.dist-check]
+cmd = "uvx twine check dist/*.tar.gz dist/*.whl"
+help = "Validate built distributions before publishing"
 
 [tool.poe.tasks.check]
 sequence = ["format", "lint", "type-check", "test", "deptry"]
