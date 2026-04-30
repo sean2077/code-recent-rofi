@@ -37,12 +37,11 @@ def run(
     _, entries = read_recent_entries(databases)
     items = recent_items_from_entries(entries)
 
-    if not items:
-        notify_no_recent()
-        return 1
-
     selected = choose_item(items, prompt=prompt, rofi_command=rofi_command)
     if selected is None:
+        if not items:
+            notify_no_recent()
+            return 1
         return 0
 
     open_target(selected.target, code_command=code_command)

@@ -8,8 +8,17 @@ The intended desktop workflow is:
 keyboard shortcut -> code-recent-rofi
                   -> rofi popup
                   -> select a recent VS Code target
-                  -> code opens the selection
+                  -> code opens or creates the selection
 ```
+
+## Native VS Code status
+
+[VS Code 1.118](https://code.visualstudio.com/updates/v1_118) adds native
+recent-folder sharing for the Visual Studio Code Agents app in Insiders. That
+covers the VS Code Insiders/Agents workflow, but it is not a general Linux
+launcher API. `code-recent-rofi` remains useful when you want a rofi menu for
+VS Code recent projects, files, and workspaces before asking VS Code to open or
+create the selected target.
 
 ## Requirements
 
@@ -63,6 +72,9 @@ Run the default workflow:
 code-recent-rofi
 ```
 
+Select a recent item, or type a new path in rofi and press Enter. Custom input
+is passed to VS Code as an open-or-create target.
+
 Use a specific VS Code database, useful for debugging or tests:
 
 ```bash
@@ -83,11 +95,16 @@ code-recent-rofi --version
 
 ## Behavior
 
-- Local `file://` targets open with `code --reuse-window <path>`.
-- `vscode-remote://` and `vscode://` targets open with `code --folder-uri <uri>`.
+- Local `file://` targets use VS Code's open-or-create behavior through
+  `code --reuse-window <path>`.
+- `vscode-remote://` and `vscode://` targets are handed to VS Code through
+  `code --folder-uri <uri>`.
+- Non-recent custom input from rofi is treated as a plain open-or-create target;
+  leading `~` is expanded before launching VS Code.
 - Duplicate recent targets are hidden while preserving VS Code's recency order.
 - Cancelling rofi exits without opening anything.
-- If no recent data is found, the tool sends a best-effort desktop notification.
+- If no recent data is found and no custom input is entered, the tool sends a
+  best-effort desktop notification.
 
 ## Development
 

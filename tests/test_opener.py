@@ -25,3 +25,13 @@ def test_code_command_for_plain_target() -> None:
         "--reuse-window",
         "/workspace/app",
     ]
+
+
+def test_code_command_for_plain_target_expands_home(monkeypatch) -> None:
+    monkeypatch.setenv("HOME", "/home/dev")
+
+    assert code_command_for_target("~/workspace/new-app") == [
+        "code",
+        "--reuse-window",
+        "/home/dev/workspace/new-app",
+    ]

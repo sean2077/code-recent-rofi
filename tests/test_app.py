@@ -12,15 +12,41 @@ def test_run_returns_no_data_when_recent_list_is_empty(monkeypatch) -> None:
     def fake_read_recent_entries(databases):
         return None, []
 
+    def fake_choose_item(items, *, prompt, rofi_command):
+        assert items == []
+
     def fake_notify_no_recent() -> None:
         nonlocal notified
         notified = True
 
     monkeypatch.setattr(recent_app, "read_recent_entries", fake_read_recent_entries)
+    monkeypatch.setattr(recent_app, "choose_item", fake_choose_item)
     monkeypatch.setattr(recent_app, "notify_no_recent", fake_notify_no_recent)
 
     assert recent_app.run() == 1
     assert notified is True
+
+
+def test_run_opens_custom_target_when_recent_list_is_empty(monkeypatch) -> None:
+    opened: list[str] = []
+    custom_item = RecentItem(label="New App", target="~/workspace/new-app", detail="~/workspace/new-app")
+
+    def fake_read_recent_entries(databases):
+        return None, []
+
+    def fake_choose_item(items, *, prompt, rofi_command):
+        assert items == []
+        return custom_item
+
+    def fake_open_target(target, *, code_command):
+        opened.append(f"{code_command}:{target}")
+
+    monkeypatch.setattr(recent_app, "read_recent_entries", fake_read_recent_entries)
+    monkeypatch.setattr(recent_app, "choose_item", fake_choose_item)
+    monkeypatch.setattr(recent_app, "open_target", fake_open_target)
+
+    assert recent_app.run(code_command="codium") == 0
+    assert opened == ["codium:~/workspace/new-app"]
 
 
 def test_run_opens_selected_target(monkeypatch) -> None:
