@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from code_recent_rofi.opener import candidate_window_state_files, code_command_for_target
+from code_recent_rofi.vscode_recent import file_uri_to_path
 
 
 def write_window_state(
@@ -23,11 +24,13 @@ def write_window_state(
 
 
 def test_code_command_for_local_file_uri() -> None:
-    assert code_command_for_target("file:///workspace/My%20Project", window_state_files=[]) == [
+    target = "file:///workspace/My%20Project"
+
+    assert code_command_for_target(target, window_state_files=[]) == [
         "code",
         "--new-window",
         "--",
-        "/workspace/My Project",
+        file_uri_to_path(target),
     ]
 
 
@@ -38,32 +41,36 @@ def test_code_command_for_remote_uri() -> None:
 
 
 def test_code_command_for_plain_target() -> None:
-    assert code_command_for_target("/workspace/app", code_command="codium", window_state_files=[]) == [
+    target = "/workspace/app"
+
+    assert code_command_for_target(target, code_command="codium", window_state_files=[]) == [
         "codium",
         "--new-window",
         "--",
-        "/workspace/app",
+        str(Path(target).expanduser()),
     ]
 
 
 def test_code_command_for_plain_target_expands_home(monkeypatch) -> None:
     monkeypatch.setenv("HOME", "/home/dev")
+    target = "~/workspace/new-app"
 
-    assert code_command_for_target("~/workspace/new-app", window_state_files=[]) == [
+    assert code_command_for_target(target, window_state_files=[]) == [
         "code",
         "--new-window",
         "--",
-        "/home/dev/workspace/new-app",
+        str(Path(target).expanduser()),
     ]
 
 
 def test_code_command_for_open_plain_target_focuses_existing_window(tmp_path: Path) -> None:
+    target = "/workspace/app"
     state_file = write_window_state(tmp_path, [{"folder": "file:///workspace/app"}])
 
-    assert code_command_for_target("/workspace/app", window_state_files=[state_file]) == [
+    assert code_command_for_target(target, window_state_files=[state_file]) == [
         "code",
         "--",
-        "/workspace/app",
+        str(Path(target).expanduser()),
     ]
 
 
@@ -104,25 +111,27 @@ def test_code_command_for_open_local_directory_focuses_with_folder_uri(tmp_path:
 
 
 def test_code_command_for_last_active_target_focuses_existing_window(tmp_path: Path) -> None:
+    target = "/workspace/app"
     state_file = write_window_state(tmp_path, [], last_active_window={"folder": "file:///workspace/app"})
 
-    assert code_command_for_target("/workspace/app", window_state_files=[state_file]) == [
+    assert code_command_for_target(target, window_state_files=[state_file]) == [
         "code",
         "--",
-        "/workspace/app",
+        str(Path(target).expanduser()),
     ]
 
 
 def test_code_command_for_open_workspace_file_focuses_existing_window(tmp_path: Path) -> None:
+    target = "file:///workspace/app.code-workspace"
     state_file = write_window_state(
         tmp_path,
-        [{"workspaceIdentifier": {"configURIPath": "file:///workspace/app.code-workspace"}}],
+        [{"workspaceIdentifier": {"configURIPath": target}}],
     )
 
-    assert code_command_for_target("file:///workspace/app.code-workspace", window_state_files=[state_file]) == [
+    assert code_command_for_target(target, window_state_files=[state_file]) == [
         "code",
         "--",
-        "/workspace/app.code-workspace",
+        file_uri_to_path(target),
     ]
 
 

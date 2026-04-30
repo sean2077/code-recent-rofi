@@ -6,6 +6,7 @@ import json
 import os
 import sqlite3
 import urllib.parse
+import urllib.request
 from collections.abc import Iterable, Iterator, Mapping
 from contextlib import closing
 from pathlib import Path
@@ -78,7 +79,7 @@ def target_from_entry(entry: Mapping[str, Any]) -> str | None:
 
 def file_uri_to_path(target: str) -> str:
     """Decode a file URI to a local filesystem path."""
-    return urllib.parse.unquote(urllib.parse.urlparse(target).path)
+    return urllib.request.url2pathname(urllib.parse.urlparse(target).path)
 
 
 def display_label(entry: Mapping[str, Any], target: str) -> str:
